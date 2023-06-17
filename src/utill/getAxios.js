@@ -81,7 +81,7 @@ export function axiosGet(url,parmObj) {
   ).then(function (response) {
     return response.data;
   }).catch(error => {
-    if(error.response.status ='302'){
+    if(error.response.status =='302'){
       window.location.href = conf().CLIENT_SERVER;
     }
 });

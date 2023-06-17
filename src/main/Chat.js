@@ -17,19 +17,21 @@ import FolderIcon from '@mui/icons-material/Folder';
 import Avatar from '@mui/material/Avatar';
 
 import {userContext} from '../provider/userContext';
-import {conf} from '../conf/conf.js'; // 
+import {conf} from '../conf/conf.js'; 
+import {axiosGet} from '../utill/getAxios';
 
 const con = {padding:'0'};
 const preCss = {color:'red',float:'right'};
-//const socket =  io.connect('https://nodechatserver.nayaguny.repl.co');
 
-console.log('socket 초기화');
+//const socket = io.connect(conf().CHAT_SERVER_URL); // var socket = io.connect(url, { transports: ['websocket'] });
+//console.log('socket 초기화');
+
 
 
 const chatBoxCssLeft = { display:'grid',gridAutoColumns: 'minmax(10px, 0.4fr)'};
 const chatBoxCssRight = { display:'grid',gridAutoColumns: 'minmax(10px, 0.4fr)', gridTemplateColumns: '1fr 1fr'};
 
-
+let socket = null;
 function Chat(props) {
 
   const userCO  = useContext(userContext); //user class 객체
@@ -39,18 +41,23 @@ function Chat(props) {
   const [msg, setMsg] = useState({});
   const [chat, setChat] = React.useState([]);
   const [chatList, setchatList] = useState([]);
-  const [socket, setSocket] = useState(io.connect(conf().CHAT_SERVER_URL));
+  //const [socket, setSocket] = useState(io.connect(conf().CHAT_SERVER_URL));
   const txtField = useRef();
-  
-  
+
+  if(socket == null || !socket.connected){
+    console.log('socket 연결 합니다');
+    socket = io.connect(conf().CHAT_SERVER_URL);
+  }
+
 /** socket io의 경우 [] 최초 실행으로 할경우 
  *  usetState 값은 초기값으로 설정한다
  */
   useEffect(()=>{
-    console.log('수행1');
+    console.log('socket',socket);
     console.log('props member: ',props.member);
     console.log('props chatRoom num : ',props.chatRoom[0]);
-   
+ 
+
     socket.emit('enter_room', props.chatRoom[0].room_id ,()=>console.log(`${props.chatRoom[0].room_id}번 입장`));
 
     socket.on('message',(msgObj)=>{
@@ -64,8 +71,12 @@ function Chat(props) {
   
   });
     return () => {
+      
+
+     // socket.disconnect();
+
+      axiosGet('/exit/room',{id:userId,room_id:props.chatRoom[0].room_id});
       console.log('소켓 연결이 종료되었습니다');
-      socket.disconnect();
     }
 
   },[]);
