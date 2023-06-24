@@ -19,14 +19,16 @@ import FolderIcon from '@mui/icons-material/Folder';
 import Avatar from '@mui/material/Avatar';
 import {axiosGet} from '../utill/getAxios';
 
+import {conf} from '../conf/conf.js'; // 
 
-
+import alarmClass from '../class/alarmClass';
 
 const con = {padding:'0'};
 const preCss = {color:'red',float:'right'};
 
 function ChatRoom(props) {
   
+
 const scrollBox = useRef(null);
  // let a = 'kg';
  // console.log(`안녕 ${a}`);
@@ -59,6 +61,7 @@ const scrollBox = useRef(null);
       props.setChatRomm(chatRoomInfo);
       //대화 창으로 넘어 가기 위해 값 지정 
       props.setTabNumber(1);
+      props.setDetailValue('chat');
   }
   
   const  getChatList = async () =>{
@@ -76,6 +79,17 @@ const scrollBox = useRef(null);
   useEffect(() => {
     getChatList();
    
+
+    const es = new alarmClass();
+    
+    es.addRedEvent();
+
+
+  
+  return () => {
+    es.close();
+
+  }
   }, []);
 
    useEffect(() => {
@@ -98,7 +112,7 @@ const scrollBox = useRef(null);
 
                <ListItemText
                      
-                    primary={chat.room_user}
+                    primary={ (chat.contents != null) ? (JSON.parse(chat.contents))[chat.total_length-1].message : ''  }
                    
                   /> 
               <IconButton edge="end" value ={ chat.room_user2 +','+chat.room_user } aria-label="comments" onClick={iconClick}>

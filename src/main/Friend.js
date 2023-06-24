@@ -20,7 +20,7 @@ import Avatar from '@mui/material/Avatar';
 import {axiosGet} from '../utill/getAxios';
 import {userContext} from '../provider/userContext';
 
-
+import { blue } from '@mui/material/colors';
 
 const con = {padding:'0'};
 const preCss = {color:'red',float:'right'};
@@ -85,9 +85,7 @@ const scrollBox = useRef(null);
           >
                <ListItemButton>
                     <ListItemAvatar sx={{  width: '0vh' }}>
-                      <Avatar>
-                        <FolderIcon />
-                      </Avatar>
+                    <Avatar  sx={{ bgcolor: blue[500] }}  src="/broken-image.jpg" />
                     </ListItemAvatar>
                            {/* <pre style={preCss}>{friend.friend_id}</pre>  */}
 

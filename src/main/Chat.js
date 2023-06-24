@@ -43,20 +43,21 @@ function Chat(props) {
   const [chatList, setchatList] = useState([]);
   //const [socket, setSocket] = useState(io.connect(conf().CHAT_SERVER_URL));
   const txtField = useRef();
+  const scrollBox = useRef(null);
+  const messageEndRef = useRef(null);
 
   if(socket == null || !socket.connected){
     console.log('socket 연결 합니다');
     socket = io.connect(conf().CHAT_SERVER_URL);
   }
 
-/** socket io의 경우 [] 최초 실행으로 할경우 
- *  usetState 값은 초기값으로 설정한다
- */
-  useEffect(()=>{
-    console.log('socket',socket);
-    console.log('props member: ',props.member);
-    console.log('props chatRoom num : ',props.chatRoom[0]);
- 
+
+  useEffect( ()=>{
+    //console.log('socket',socket);
+    //console.log('props member: ',props.member);
+   // console.log('props chatRoom num : ',props.chatRoom[0]);
+
+    getDetailContents();
 
     socket.emit('enter_room', props.chatRoom[0].room_id ,()=>console.log(`${props.chatRoom[0].room_id}번 입장`));
 
@@ -66,21 +67,16 @@ function Chat(props) {
     //  setChatId(msgObj.id);
    //  setChat(message => [...chat, message]);
     // ad(message); 
-      console.log('수행',userId);
-     
-  
+    //  console.log('수행',userId);
   });
     return () => {
       
-
-     // socket.disconnect();
-
+      socket.disconnect();
       axiosGet('/exit/room',{id:userId,room_id:props.chatRoom[0].room_id});
       console.log('소켓 연결이 종료되었습니다');
     }
 
   },[]);
-
 
 
   useEffect(() => {
@@ -93,6 +89,10 @@ function Chat(props) {
      //setchatList(chatList);
      //console.log(chatList);
 
+     console.log(scrollBox.current);
+ 
+     //scrollBox.current.scrollTo({ top: 10000, behavior: "smooth" });
+
     // setMsg({});
     window.scrollTo({
       top: 350,
@@ -101,7 +101,29 @@ function Chat(props) {
     } 
   }, [msg]);
 
+
+
   
+  useEffect(() => {
+ 
+    messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
+     //scrollBox.current.scrollTo({ top: 10000, behavior: "smooth" });
+     //scrollBox.current.scrollIntoView({ behavior: 'smooth' });
+  
+  }, [chat]);
+
+  const getDetailContents = async () =>{
+ 
+    const detailContents = await axiosGet('/chat/getDetailContents',{room_id:props.chatRoom[0].room_id});
+     console.log(detailContents);
+     if(detailContents !== 'fail'){
+      setChat(detailContents);
+     }
+     
+
+  }
+
+
   const getTxtField = (e) => {
   //   console.log(e.target.value);
       //setMsg(e.target.value);
@@ -125,9 +147,7 @@ function Chat(props) {
   }
 
   const listRender = () => {
-    console.log(chat);
- 
-
+  
      return chat.map((chat,index) => {
 
           //if (chat.id === userId) {
@@ -171,18 +191,19 @@ function Chat(props) {
     if (event.target.scrollTop === event.target.scrollHeight) {
      //user is at the end of the list so load more items
     } 
-    console.log(event.target.scrollTop);
+    //console.log(event.target.scrollTop);
+   
   }
   
   return (
     <>
       <CssBaseline />
       <Container  class='chatContainer' maxWidth="false">
-        <Box sx={{  overflow: 'auto' }} onScroll={loadMoreItems}>
-             <List   onScroll={loadMoreItems}>
+        <Box sx={{  overflow: 'auto' }}   ref={scrollBox}  >
+             <List>
                     {listRender()}
              </List>
-
+             <Box sx={{  height: '0vh' }} ref={messageEndRef}></Box>
         </Box>
 
         <Box sx={{  display: 'grid', gridTemplateColumns: '8fr 2fr'
