@@ -6,7 +6,7 @@ import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
-
+import io from 'socket.io-client';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -25,18 +25,18 @@ import alarmClass from '../class/alarmClass';
 
 const con = {padding:'0'};
 const preCss = {color:'red',float:'right'};
+let socket = null;
 
 function ChatRoom(props) {
   
 
 const scrollBox = useRef(null);
- // let a = 'kg';
- // console.log(`안녕 ${a}`);
-  const [chat, setChat] = useState(['aaa','bbb','ccc']);
+  
   const [chatRow, setChatRow] = useState([]);
-  const [fList, setFlist] = useState([]);
   const [chatList, setChatlist] = useState([]);
-  const txtField = useRef();
+  const [broadCast, setBroadCast] = useState('');
+
+
 
   const  iconClick = async (e) => {
       console.log(e.currentTarget.value);
@@ -77,23 +77,54 @@ const scrollBox = useRef(null);
   }
 
   useEffect(() => {
+    console.log('chatroom 최초 실행 로직');
     getChatList();
-   
 
-    const es = new alarmClass();
+    if(socket == null || !socket.connected){
+      console.log('broad socket 연결 합니다',socket);
+      socket = io.connect(conf().CHAT_SERVER_URL);
+     
+    }
+
+    socket.emit('enter_room', 'broadcast' ,()=>console.log(`broadcast 입장`));
+
+    socket.on('message',(msgObj)=>{
+      console.log('broadcast msgobj : ',msgObj);
+ 
+      setBroadCast(msgObj);
     
-    es.addRedEvent();
+    });
 
-
+    //serversendEvent source
+    //const es = new alarmClass();
+    //es.addRedEvent();
   
   return () => {
-    es.close();
-
+    socket.disconnect();
+    console.log('socket broadcast 종료 합니다');
+    //es.close();
+    socket = null;
   }
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
 
+
+
+    chatList.forEach(function(chat) {
+      if(chat.room_id == broadCast.room_id){
+   
+        chat.total_length  = chat.total_length + 1;
+        chat.contents = JSON.stringify((JSON.parse(chat.contents)).concat(broadCast));
+
+      }
+  });
+ //아마도.... 같은 변수로 인식하기 때문에 아예 깊은복사를
+  setChatlist(  JSON.parse(JSON.stringify(chatList)) );
+
+  }, [broadCast]);
+
+   useEffect(() => {
 
     const chatRow = chatList.map((chat) => (
     
@@ -125,15 +156,6 @@ const scrollBox = useRef(null);
     setChatRow(chatRow);
      
   }, [chatList]);
-
-
-
-  
-     useEffect(() => {
- 
-      console.log('re렌더링');
-  }, []);
-  
 
 
 

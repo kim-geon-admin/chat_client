@@ -75,17 +75,19 @@ const scrollBox = useRef(null);
 
    useEffect(() => {
 
+ 
 
     const friendList = fList.map((friend) => (
-    
+   
         <ListItem 
           key={friend.seq}
           sx={{  padding: '0' }}
          
           >
+            
                <ListItemButton>
                     <ListItemAvatar sx={{  width: '0vh' }}>
-                    <Avatar  sx={{ bgcolor: blue[500] }}  src="/broken-image.jpg" />
+                    <Avatar  sx={{ bgcolor: (friend['tb_user_master.is_login'] == 'Y') ? blue[500] : blue[100]}}  src="/broken-image.jpg" />
                     </ListItemAvatar>
                            {/* <pre style={preCss}>{friend.friend_id}</pre>  */}
 
